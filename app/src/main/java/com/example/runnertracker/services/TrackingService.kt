@@ -35,8 +35,8 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.model.LatLng
 import timber.log.Timber
 
-typealias RunLine = MutableList<LatLng>
-typealias RunLines = MutableList<RunLine>
+typealias PolyLine = MutableList<LatLng>
+typealias PolyLines = MutableList<PolyLine>
 
 class TrackingService : LifecycleService() {
 
@@ -46,7 +46,7 @@ class TrackingService : LifecycleService() {
 
     companion object {
         val isTracking = MutableLiveData<Boolean>()
-        val pathCoordinates = MutableLiveData<RunLines>()
+        val pathCoordinates = MutableLiveData<PolyLines>()
     }
 
     private fun postInitialValues(){
@@ -69,13 +69,16 @@ class TrackingService : LifecycleService() {
         intent?.let {
             when (it.action) {
                 ACTON_START_OR_RESUME_SERVICE -> {
-                    if (isFirstRun){
+                    if (isFirstRun) {
                         startForegroundService()
                         isFirstRun = false
+                    } else {
+                        Timber.d("started or resumed service")
+                        startForegroundService()
                     }
-                    Timber.d("started or resumed service")
                 }
                 ACTON_PAUSE_SERVICE -> {
+                    pauseService()
                     Timber.d("PAUSED service")
                 }
                 ACTON_STOP_SERVICE -> {
@@ -84,6 +87,10 @@ class TrackingService : LifecycleService() {
             }
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun pauseService(){
+        isTracking.postValue(false)
     }
 
     @SuppressLint("MissingPermission")
