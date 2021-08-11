@@ -3,7 +3,7 @@ package com.example.runnertracker.hilt_modules
 import android.content.Context
 import androidx.room.Room
 import com.example.runnertracker.db.Database
-import com.example.runnertracker.db.other.Constants.RUNNING_DATABASE_NAME
+import com.example.runnertracker.other.Constants.RUNNING_DATABASE_NAME
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
