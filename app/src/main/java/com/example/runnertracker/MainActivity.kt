@@ -45,16 +45,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        toolbar.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                R.id.to_run_fragment -> {
-//                    Navigation.findNavController(
-//                        this, R.id.action_setupFragment_to_runFragment)
-                }
-            }
-            true
-        }
-
         navigateToTrackingFragment(intent)
     }
 
