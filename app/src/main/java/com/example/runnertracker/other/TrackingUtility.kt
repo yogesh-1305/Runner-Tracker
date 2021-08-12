@@ -1,22 +1,23 @@
-package com.example.runnertracker.permissions
+package com.example.runnertracker.other
 
 import android.Manifest
 import android.content.Context
+import android.location.Location
 import android.os.Build
+import com.example.runnertracker.services.PolyLine
 import pub.devrel.easypermissions.EasyPermissions
 import java.util.concurrent.TimeUnit
-import kotlin.math.min
 
-object Permissions {
+object TrackingUtility {
 
     fun hasLocationPermissions(context: Context) =
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q){
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             EasyPermissions.hasPermissions(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
             )
-        }else {
+        } else {
             EasyPermissions.hasPermissions(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -33,7 +34,7 @@ object Permissions {
         millis -= TimeUnit.MINUTES.toMillis(minutes)
         val seconds = TimeUnit.MILLISECONDS.toSeconds(millis)
 
-        if (!includeMillis){
+        if (!includeMillis) {
             return "${if (hours < 10) "0" else ""}$hours:" +
                     "${if (minutes < 10) "0" else ""}$minutes:" +
                     "${if (seconds < 10) "0" else ""}$seconds"
@@ -44,6 +45,25 @@ object Permissions {
                 "${if (minutes < 10) "0" else ""}$minutes:" +
                 "${if (seconds < 10) "0" else ""}$seconds:" +
                 "${if (millis < 10) "0" else ""}$millis"
+    }
+
+    fun calculatePolylineLength(polyLine: PolyLine): Float {
+        var distance = 0f
+        for (i in 0..polyLine.size - 2) {
+            val position1 = polyLine[i]
+            val position2 = polyLine[i + 1]
+
+            val result = FloatArray(1)
+            Location.distanceBetween(
+                position1.latitude,
+                position1.longitude,
+                position2.latitude,
+                position2.longitude,
+                result
+            )
+            distance += result[0]
+        }
+        return distance
     }
 
 }

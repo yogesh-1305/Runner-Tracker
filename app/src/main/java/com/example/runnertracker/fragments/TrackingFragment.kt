@@ -10,6 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.runnertracker.R
 import com.example.runnertracker.databinding.FragmentTrackingBinding
+import com.example.runnertracker.db.Run
 import com.example.runnertracker.other.Constants
 import com.example.runnertracker.other.Constants.ACTION_PAUSE_SERVICE
 import com.example.runnertracker.other.Constants.ACTION_START_OR_RESUME_SERVICE
@@ -17,7 +18,7 @@ import com.example.runnertracker.other.Constants.ACTION_STOP_SERVICE
 import com.example.runnertracker.other.Constants.MAP_ZOOM
 import com.example.runnertracker.other.Constants.POLYLINE_WIDTH
 import com.example.runnertracker.other.Constants.POLY_LINE_COLOR
-import com.example.runnertracker.permissions.Permissions
+import com.example.runnertracker.other.TrackingUtility
 import com.example.runnertracker.services.PolyLine
 import com.example.runnertracker.services.TrackingService
 import com.example.runnertracker.view_models.MainViewModel
@@ -28,12 +29,16 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_tracking.*
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
+import kotlin.math.round
 
 @AndroidEntryPoint
 class TrackingFragment : Fragment() {
@@ -47,6 +52,7 @@ class TrackingFragment : Fragment() {
     private var pathCoordinates = mutableListOf<PolyLine>()
 
     private var currentTimeInMillis = 0L
+    private var weight = 80
 
     private var menu: Menu? = null
 
@@ -80,6 +86,11 @@ class TrackingFragment : Fragment() {
             pointToMyLocation()
         }
 
+        binding.btnFinishRun.setOnClickListener {
+            zoomToSeeWholeTrack()
+            endRunAndSaveToDb()
+        }
+
         subscribeToObservers()
     }
 
@@ -95,7 +106,7 @@ class TrackingFragment : Fragment() {
         })
         TrackingService.timeInMillis.observe(viewLifecycleOwner, {
             currentTimeInMillis = it
-            val formattedTime = Permissions.getFormattedStopWatchTime(currentTimeInMillis, true)
+            val formattedTime = TrackingUtility.getFormattedStopWatchTime(currentTimeInMillis, true)
             timerTextView.text = formattedTime
         })
     }
@@ -135,7 +146,7 @@ class TrackingFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun pointToMyLocation() {
-        if (Permissions.hasLocationPermissions(requireContext())) {
+        if (TrackingUtility.hasLocationPermissions(requireContext())) {
             val request = LocationRequest().apply {
                 interval = Constants.LOCATION_UPDATE_INTERVAL
                 fastestInterval = Constants.FASTEST_LOCATION_UPDATE_INTERVAL
@@ -166,6 +177,42 @@ class TrackingFragment : Fragment() {
                     pointToMyLocation = false
                 }
             }
+        }
+    }
+
+    private fun zoomToSeeWholeTrack() {
+        val bounds = LatLngBounds.builder()
+        for (polyline in pathCoordinates) {
+            for (position in polyline) {
+                bounds.include(position)
+            }
+        }
+        map?.moveCamera(
+            CameraUpdateFactory.newLatLngBounds(
+                bounds.build(),
+                mapView.width,
+                mapView.height,
+                (mapView.width * 0.05f).toInt()
+            )
+        )
+    }
+
+    private fun endRunAndSaveToDb() {
+        map?.snapshot { bmp ->
+            var distanceInMeters = 0
+            for (polyline in pathCoordinates) {
+                distanceInMeters += TrackingUtility.calculatePolylineLength(polyline).toInt()
+            }
+            val avgSpeedInKMPH =
+                round((distanceInMeters / 1000f) / (currentTimeInMillis / 1000f / 60 / 60) * 10) / 10f
+            val dateTimeStamp = Calendar.getInstance().timeInMillis
+            val caloriesBurned = ((distanceInMeters / 1000f) * weight).toInt()
+            val run = Run(bmp, dateTimeStamp, avgSpeedInKMPH, distanceInMeters, currentTimeInMillis, caloriesBurned)
+            viewModel.insertRun(run)
+            Snackbar.make(binding.root,
+            "Run Save Successfully",
+            Snackbar.LENGTH_LONG).show()
+            stopRun()
         }
     }
 

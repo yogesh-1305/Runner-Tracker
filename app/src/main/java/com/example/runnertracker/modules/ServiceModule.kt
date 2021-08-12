@@ -1,4 +1,4 @@
-package com.example.runnertracker.hilt_modules
+package com.example.runnertracker.modules
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
@@ -15,7 +15,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ServiceComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ServiceScoped
-import javax.inject.Singleton
 
 @Module
 @InstallIn(ServiceComponent::class)

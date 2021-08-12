@@ -9,10 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.runnertracker.R
+import com.example.runnertracker.adapters.RunAdapter
 import com.example.runnertracker.databinding.FragmentRunBinding
 import com.example.runnertracker.other.Constants.REQUEST_CODE_LOCATION_PERMISSIONS
-import com.example.runnertracker.permissions.Permissions
+import com.example.runnertracker.other.TrackingUtility
 import com.example.runnertracker.view_models.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import pub.devrel.easypermissions.AppSettingsDialog
@@ -23,6 +25,7 @@ class RunFragment : Fragment(), EasyPermissions.PermissionCallbacks{
 
     private val viewModel: MainViewModel by viewModels()
     private lateinit var binding: FragmentRunBinding
+    private lateinit var runAdapter: RunAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,13 +38,25 @@ class RunFragment : Fragment(), EasyPermissions.PermissionCallbacks{
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         requestLocationPermission()
+        setupRecyclerview()
+
+        viewModel.runSortedByDate.observe(viewLifecycleOwner, {
+            runAdapter.submitList(it)
+        })
+
         binding.startRunButton.setOnClickListener{
             findNavController().navigate(R.id.action_runFragment_to_trackingFragment)
         }
     }
 
+    private fun setupRecyclerview() = binding.rvRuns.apply {
+        runAdapter = RunAdapter()
+        adapter = runAdapter
+        layoutManager = LinearLayoutManager(requireContext())
+    }
+
     private fun requestLocationPermission() {
-        if (Permissions.hasLocationPermissions(requireContext())) {
+        if (TrackingUtility.hasLocationPermissions(requireContext())) {
             return
         }
 

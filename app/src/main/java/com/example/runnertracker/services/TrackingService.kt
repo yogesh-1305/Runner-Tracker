@@ -22,7 +22,7 @@ import com.example.runnertracker.other.Constants.NOTIFICATION_CHANNEL_ID
 import com.example.runnertracker.other.Constants.NOTIFICATION_CHANNEL_NAME
 import com.example.runnertracker.other.Constants.NOTIFICATION_ID
 import com.example.runnertracker.other.Constants.TIMER_UPDATE_INTERVAL
-import com.example.runnertracker.permissions.Permissions
+import com.example.runnertracker.other.TrackingUtility
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -34,7 +34,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 typealias PolyLine = MutableList<LatLng>
@@ -140,7 +139,7 @@ class TrackingService : LifecycleService() {
     @SuppressLint("MissingPermission")
     private fun updateLocationTracking(isTracking: Boolean) {
         if (isTracking) {
-            if (Permissions.hasLocationPermissions(this)) {
+            if (TrackingUtility.hasLocationPermissions(this)) {
                 val request = LocationRequest().apply {
                     interval = LOCATION_UPDATE_INTERVAL
                     fastestInterval = FASTEST_LOCATION_UPDATE_INTERVAL
