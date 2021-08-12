@@ -1,13 +1,16 @@
 package com.example.runnertracker.fragments
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.os.Looper
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.runnertracker.R
 import com.example.runnertracker.databinding.FragmentTrackingBinding
+import com.example.runnertracker.other.Constants
 import com.example.runnertracker.other.Constants.ACTION_PAUSE_SERVICE
 import com.example.runnertracker.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.example.runnertracker.other.Constants.ACTION_STOP_SERVICE
@@ -18,12 +21,19 @@ import com.example.runnertracker.permissions.Permissions
 import com.example.runnertracker.services.PolyLine
 import com.example.runnertracker.services.TrackingService
 import com.example.runnertracker.view_models.MainViewModel
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_tracking.*
+import javax.inject.Inject
+import javax.inject.Named
 
 @AndroidEntryPoint
 class TrackingFragment : Fragment() {
@@ -33,16 +43,21 @@ class TrackingFragment : Fragment() {
     private lateinit var binding: FragmentTrackingBinding
 
     private var isTracking = false
+    private var pointToMyLocation = false
     private var pathCoordinates = mutableListOf<PolyLine>()
 
     private var currentTimeInMillis = 0L
 
     private var menu: Menu? = null
 
+    @Inject
+    @Named("for_fragment")
+    lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentTrackingBinding.inflate(inflater, container, false)
         setHasOptionsMenu(true)
         return binding.root
@@ -59,6 +74,12 @@ class TrackingFragment : Fragment() {
             map = it
             addAllPolyLines()
         }
+
+        binding.showMyLocationBtn.setOnClickListener {
+            pointToMyLocation = true
+            pointToMyLocation()
+        }
+
         subscribeToObservers()
     }
 
@@ -101,7 +122,7 @@ class TrackingFragment : Fragment() {
 
     }
 
-    private fun syncMapCenterWithUserLocation(){
+    private fun syncMapCenterWithUserLocation() {
         if (pathCoordinates.isNotEmpty() && pathCoordinates.last().isNotEmpty()) {
             map?.animateCamera(
                 CameraUpdateFactory.newLatLngZoom(
@@ -112,8 +133,44 @@ class TrackingFragment : Fragment() {
         }
     }
 
-    private fun addAllPolyLines(){
-        for (polyline in pathCoordinates){
+    @SuppressLint("MissingPermission")
+    private fun pointToMyLocation() {
+        if (Permissions.hasLocationPermissions(requireContext())) {
+            val request = LocationRequest().apply {
+                interval = Constants.LOCATION_UPDATE_INTERVAL
+                fastestInterval = Constants.FASTEST_LOCATION_UPDATE_INTERVAL
+                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            }
+            fusedLocationProviderClient.requestLocationUpdates(
+                request,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+        }
+    }
+
+    private val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(p0: LocationResult) {
+            super.onLocationResult(p0)
+            p0.locations.let { locations ->
+                if (pointToMyLocation) {
+                    for (location in locations) {
+                        val latLng = LatLng(location.latitude, location.longitude)
+                        map?.animateCamera(
+                            CameraUpdateFactory.newLatLngZoom(
+                                latLng,
+                                MAP_ZOOM
+                            )
+                        )
+                    }
+                    pointToMyLocation = false
+                }
+            }
+        }
+    }
+
+    private fun addAllPolyLines() {
+        for (polyline in pathCoordinates) {
             val polylineOptions = PolylineOptions()
                 .color(POLY_LINE_COLOR)
                 .width(POLYLINE_WIDTH)
@@ -123,7 +180,7 @@ class TrackingFragment : Fragment() {
     }
 
     private fun addLatestPolyLine() {
-        if (pathCoordinates.isNotEmpty() && pathCoordinates.last().size > 1){
+        if (pathCoordinates.isNotEmpty() && pathCoordinates.last().size > 1) {
             val secondLastCoordinate = pathCoordinates.last()[pathCoordinates.last().size - 2]
             val lastCoordinate = pathCoordinates.last().last()
             val polylineOptions = PolylineOptions()
@@ -135,7 +192,7 @@ class TrackingFragment : Fragment() {
         }
     }
 
-    private fun sendCommandToService(action: String){
+    private fun sendCommandToService(action: String) {
         Intent(requireContext(), TrackingService::class.java).also {
             it.action = action
             requireActivity().startService(it)
@@ -164,10 +221,10 @@ class TrackingFragment : Fragment() {
 
     private fun showCancelRunDialog() {
         val dialog = MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Cancel the Rin?")
-            .setMessage("Are you sure to cancel the run? This will delete all its data.")
+            .setTitle("Cancel the Run?")
+            .setMessage("Are you sure to cancel the run? This will delete all the current run's data.")
             .setIcon(R.drawable.ic_baseline_delete_outline_24)
-            .setPositiveButton("I'm Sure, Delete it"){ _, _ ->
+            .setPositiveButton("I'm Sure, Delete it") { _, _ ->
                 stopRun()
             }.setNegativeButton("No! Take me back") { dialogInterface, _ ->
                 dialogInterface.cancel()
