@@ -16,8 +16,10 @@ import com.example.runnertracker.other.SortType
 import com.example.runnertracker.other.TrackingUtility
 import com.example.runnertracker.view_models.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.activity_main.*
 import pub.devrel.easypermissions.AppSettingsDialog
 import pub.devrel.easypermissions.EasyPermissions
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class RunFragment : Fragment(), EasyPermissions.PermissionCallbacks{

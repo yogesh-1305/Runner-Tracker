@@ -52,7 +52,9 @@ class TrackingFragment : Fragment() {
     private var pathCoordinates = mutableListOf<PolyLine>()
 
     private var currentTimeInMillis = 0L
-    private var weight = 80
+
+    @set:Inject
+    private var weight = 80f
 
     private var menu: Menu? = null
 
