@@ -3,6 +3,7 @@ package com.example.runnertracker.fragments
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.*
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.runnertracker.R
@@ -40,8 +41,8 @@ class SetupFragment : Fragment() {
 
         binding.setupFragContinueButton.setOnClickListener {
             when (getUserDataAndSaveInSharedPrefs()){
-                0 -> binding.setUsernameLayout.error = "Name Required"
-                1 -> binding.setWeightLayout.error = "Weight required to calculate your calories"
+                0 -> binding.setUsernameEt.error = "Name Required"
+                1 -> binding.setWeightEt.error = "Weight required to calculate your calories"
                 true -> findNavController().navigate(R.id.action_setupFragment_to_runFragment)
             }
         }
@@ -62,6 +63,23 @@ class SetupFragment : Fragment() {
             putBoolean(KEY_FIRST_TIME_USER, false)
         }.apply()
         return true
+    }
 
+    private fun listenToTextChanges() {
+        binding.setUsernameEt.addTextChangedListener {
+            if (it?.length == 0){
+                binding.setUsernameEt.error = "Name Required"
+            }else{
+                binding.setUsernameEt.error = null
+            }
+        }
+
+        binding.setWeightEt.addTextChangedListener {
+            if (it?.length == 0){
+                binding.setWeightEt.error = "Weight required to calculate your calories"
+            }else{
+                binding.setWeightEt.error = null
+            }
+        }
     }
 }
