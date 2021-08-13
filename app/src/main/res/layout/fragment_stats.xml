@@ -7,6 +7,7 @@
     tools:context=".fragments.StatsFragment">
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/cardView2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -29,6 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:text="00:00:00"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textSize="34sp"
                 app:layout_constraintEnd_toStartOf="@+id/total_distance"
                 app:layout_constraintHorizontal_bias="0.5"
@@ -41,6 +43,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:text="10.0 KM"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textSize="34sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
@@ -53,6 +56,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:text="343 kcal"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textSize="34sp"
                 app:layout_constraintEnd_toStartOf="@+id/total_avg_speed"
                 app:layout_constraintHorizontal_bias="0.5"
@@ -65,6 +69,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:text="12.3 km/h"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textSize="34sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
@@ -75,7 +80,7 @@
                 android:id="@+id/total_time_heading"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:text="Total Time"
                 app:layout_constraintEnd_toEndOf="@+id/total_time"
                 app:layout_constraintStart_toStartOf="@+id/total_time"
@@ -85,7 +90,7 @@
                 android:id="@+id/total_calories_heading"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginBottom="32dp"
                 android:text="Total Calories Burned"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -97,7 +102,7 @@
                 android:id="@+id/total_avg_distance_heading"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginBottom="32dp"
                 android:text="Average Speed"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -109,12 +114,26 @@
                 android:id="@+id/total_distance_heading"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:text="Total Distance"
                 app:layout_constraintEnd_toEndOf="@+id/total_distance"
                 app:layout_constraintStart_toStartOf="@+id/total_distance"
                 app:layout_constraintTop_toBottomOf="@+id/total_distance" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
+
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/stats_chart"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardView2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
