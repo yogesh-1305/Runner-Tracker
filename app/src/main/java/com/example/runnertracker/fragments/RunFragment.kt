@@ -3,10 +3,8 @@ package com.example.runnertracker.fragments
 import android.Manifest
 import android.os.Build
 import android.os.Bundle
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,6 +12,7 @@ import com.example.runnertracker.R
 import com.example.runnertracker.adapters.RunAdapter
 import com.example.runnertracker.databinding.FragmentRunBinding
 import com.example.runnertracker.other.Constants.REQUEST_CODE_LOCATION_PERMISSIONS
+import com.example.runnertracker.other.SortType
 import com.example.runnertracker.other.TrackingUtility
 import com.example.runnertracker.view_models.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,6 +31,7 @@ class RunFragment : Fragment(), EasyPermissions.PermissionCallbacks{
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentRunBinding.inflate(inflater, container, false)
+        setHasOptionsMenu(true)
         return binding.root
     }
 
@@ -40,7 +40,7 @@ class RunFragment : Fragment(), EasyPermissions.PermissionCallbacks{
         requestLocationPermission()
         setupRecyclerview()
 
-        viewModel.runSortedByDate.observe(viewLifecycleOwner, {
+        viewModel.runs.observe(viewLifecycleOwner, {
             runAdapter.submitList(it)
         })
 
@@ -79,6 +79,23 @@ class RunFragment : Fragment(), EasyPermissions.PermissionCallbacks{
             )
         }
     }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.sort_runs_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.sort_date -> {viewModel.sortRuns(sortType = SortType.DATE)}
+            R.id.sort_time -> {viewModel.sortRuns(sortType = SortType.TIME)}
+            R.id.sort_avg_speed -> {viewModel.sortRuns(sortType = SortType.AVG_SPEED)}
+            R.id.sort_distance -> {viewModel.sortRuns(sortType = SortType.DISTANCE)}
+            R.id.sort_calories -> {viewModel.sortRuns(sortType = SortType.CALORIES)}
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
 
     override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {}
 

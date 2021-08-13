@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/sort"
+        android:title="Sort by">
+
+        <menu>
+
+            <item
+                android:id="@+id/sort_date"
+                android:title="DATE" />
+
+            <item
+                android:id="@+id/sort_time"
+                android:title="TIME" />
+
+            <item
+                android:id="@+id/sort_avg_speed"
+                android:title="AVG SPEED" />
+
+            <item
+                android:id="@+id/sort_distance"
+                android:title="DISTANCE" />
+
+            <item
+                android:id="@+id/sort_calories"
+                android:title="CALORIES" />
+
+        </menu>
+
+    </item>
+
+</menu>
